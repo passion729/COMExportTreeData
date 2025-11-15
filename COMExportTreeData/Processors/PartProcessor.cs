@@ -105,9 +105,18 @@ namespace COMExportTreeData.Processors {
                     Type = "Part"
                 };
 
-                // 收集所有扁平化的节点
+                // 收集所有扁平化的节点，跳过 Part 本身，从第一层子节点开始
                 List<NodeSchema> flattenedNodes = new List<NodeSchema>();
-                FlattenNode(part, part, "", flattenedNodes, maxDepth, 0);
+                List<object> firstLevelChildren = CatiaObjectHelper.GetChildren(part, part);
+                
+                if (firstLevelChildren != null) {
+                    foreach (var child in firstLevelChildren) {
+                        if (!(child is Parameter)) {
+                            // 从第一层子节点开始，路径前缀为空
+                            FlattenNode(part, child, "", flattenedNodes, maxDepth, 1);
+                        }
+                    }
+                }
 
                 // 将扁平化的节点添加到根节点
                 rootNode.Children.AddRange(flattenedNodes);

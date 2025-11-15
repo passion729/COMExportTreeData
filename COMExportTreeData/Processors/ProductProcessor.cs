@@ -1,5 +1,6 @@
 using System;
 using COMExportTreeData.Models;
+using MECMOD;
 using ProductStructureTypeLib;
 
 namespace COMExportTreeData.Processors {
@@ -32,6 +33,29 @@ namespace COMExportTreeData.Processors {
                 // 如果达到最大深度，不再递归
                 if (maxDepth > 0 && currentDepth >= maxDepth) {
                     return productNode;
+                }
+
+                // 检查是否有关联的 Part
+                try {
+                    var partDoc = product.ReferenceProduct.Parent;
+                    if (partDoc is PartDocument) {
+                        Part part = ((PartDocument)partDoc).Part;
+                        if (part != null) {
+                            // 处理 Part 的详细结构
+                            NodeSchema partNode = PartProcessor.ProcessPart(part, mode, maxDepth, currentDepth + 1);
+                            if (partNode != null) {
+                                // 将 Part 的子节点合并到 Product 节点
+                                if (partNode.Children != null && partNode.Children.Count > 0) {
+                                    foreach (var child in partNode.Children) {
+                                        productNode.Children.Add(child);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                catch {
+                    // 如果没有关联的 Part，继续处理子产品
                 }
 
                 // 处理子产品
