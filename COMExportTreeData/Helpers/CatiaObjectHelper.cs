@@ -74,9 +74,9 @@ namespace COMExportTreeData.Helpers {
         }
 
         /// <summary>
-        /// 获取对象的子节点集合
+        /// 获取对象的子节点集合（包括结构子节点和参数子节点）
         /// </summary>
-        public static List<object> GetChildren(object obj) {
+        public static List<object> GetChildren(Part rootPart, object obj) {
             List<object> children = new List<object>();
 
             if (obj == null) return children;
@@ -102,8 +102,19 @@ namespace COMExportTreeData.Helpers {
                     catch {
                     }
                 }
-                // HybridBody的子节点：HybridShapes
+                // HybridBody的子节点：嵌套的HybridBodies和HybridShapes
                 else if (obj is HybridBody hb) {
+                    // 获取嵌套的几何图形集
+                    try {
+                        HybridBodies nestedBodies = hb.HybridBodies;
+                        for (int i = 1; i <= nestedBodies.Count; i++) {
+                            children.Add(nestedBodies.Item(i));
+                        }
+                    }
+                    catch {
+                    }
+                    
+                    // 获取几何元素
                     try {
                         HybridShapes shapes = hb.HybridShapes;
                         for (int i = 1; i <= shapes.Count; i++) {
@@ -151,6 +162,36 @@ namespace COMExportTreeData.Helpers {
                     catch {
                     }
                 }
+
+                // 添加参数节点（使用 Parameters.SubList 方法）
+                // 不包括 Part 节点，因为用户不需要根节点的参数
+                if (!(obj is Parameter) && !(obj is Part) && rootPart != null) {
+                    try {
+                        Parameters parameters = rootPart.Parameters;
+                        
+                        // 尝试将对象转换为 AnyObject
+                        INFITF.AnyObject anyObj = obj as INFITF.AnyObject;
+                        if (anyObj != null) {
+                            try {
+                                // 使用 SubList(AnyObject, false) 获取当前对象直接拥有的参数
+                                Parameters subParams = parameters.SubList(anyObj, false);
+                                
+                                if (subParams != null && subParams.Count > 0) {
+                                    for (int i = 1; i <= subParams.Count; i++) {
+                                        Parameter param = subParams.Item(i);
+                                        children.Add(param);
+                                    }
+                                }
+                            }
+                            catch {
+                                // 忽略获取参数失败
+                            }
+                        }
+                    }
+                    catch {
+                        // 忽略获取参数失败
+                    }
+                }
             }
             catch (Exception ex) {
                 Console.WriteLine($"GetChildren异常：{ex.Message}");
@@ -158,5 +199,7 @@ namespace COMExportTreeData.Helpers {
 
             return children;
         }
+
+
     }
 }

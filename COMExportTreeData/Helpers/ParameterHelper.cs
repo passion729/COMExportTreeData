@@ -127,25 +127,24 @@ namespace COMExportTreeData.Helpers {
                 if (obj is Parameter param) {
                     parameters.Add(param);
                 }
+                
+                // 获取 Part 对象
+                Part part = obj as Part;
+                if (part == null) {
+                    return parameters;
+                }
 
                 // 递归遍历子节点，收集所有参数
-                List<object> children = CatiaObjectHelper.GetChildren(obj);
+                List<object> children = CatiaObjectHelper.GetChildren(part, obj);
                 if (children != null) {
                     foreach (var child in children) {
-                        parameters.AddRange(GetAllParameters(child));
-                    }
-                }
-
-                // 尝试获取Parameters集合
-                try {
-                    if (obj is Part part) {
-                        Parameters partParams = part.Parameters;
-                        for (int i = 1; i <= partParams.Count; i++) {
-                            parameters.Add(partParams.Item(i));
+                        if (child is Parameter p) {
+                            parameters.Add(p);
+                        }
+                        else {
+                            parameters.AddRange(GetAllParameters(child));
                         }
                     }
-                }
-                catch {
                 }
             }
             catch (Exception ex) {
