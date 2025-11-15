@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using INFITF;
 using KnowledgewareTypeLib;
 using MECMOD;
 using ProductStructureTypeLib;
@@ -84,82 +85,59 @@ namespace COMExportTreeData.Helpers {
             try {
                 // Part的子节点：几何集和实体Body
                 if (obj is Part part) {
-                    try {
-                        HybridBodies hybridBodies = part.HybridBodies;
-                        for (int i = 1; i <= hybridBodies.Count; i++) {
-                            children.Add(hybridBodies.Item(i));
-                        }
-                    }
-                    catch {
+                    HybridBodies hybridBodies = part.HybridBodies;
+                    for (int i = 1; i <= hybridBodies.Count; i++) {
+                        children.Add(hybridBodies.Item(i));
                     }
 
-                    try {
-                        Bodies bodies = part.Bodies;
-                        for (int i = 1; i <= bodies.Count; i++) {
-                            children.Add(bodies.Item(i));
-                        }
-                    }
-                    catch {
+                    Bodies bodies = part.Bodies;
+                    for (int i = 1; i <= bodies.Count; i++) {
+                        children.Add(bodies.Item(i));
                     }
                 }
                 // HybridBody的子节点：嵌套的HybridBodies和HybridShapes
                 else if (obj is HybridBody hb) {
                     // 获取嵌套的几何图形集
-                    try {
-                        HybridBodies nestedBodies = hb.HybridBodies;
-                        for (int i = 1; i <= nestedBodies.Count; i++) {
-                            children.Add(nestedBodies.Item(i));
-                        }
+                    HybridBodies nestedBodies = hb.HybridBodies;
+                    for (int i = 1; i <= nestedBodies.Count; i++) {
+                        children.Add(nestedBodies.Item(i));
                     }
-                    catch {
-                    }
-                    
+
                     // 获取几何元素
-                    try {
-                        HybridShapes shapes = hb.HybridShapes;
-                        for (int i = 1; i <= shapes.Count; i++) {
-                            children.Add(shapes.Item(i));
-                        }
-                    }
-                    catch {
+
+                    HybridShapes shapes = hb.HybridShapes;
+                    for (int i = 1; i <= shapes.Count; i++) {
+                        children.Add(shapes.Item(i));
                     }
                 }
                 // Body的子节点：Shapes
                 else if (obj is Body body) {
-                    try {
-                        Shapes shapes = body.Shapes;
-                        for (int i = 1; i <= shapes.Count; i++) {
-                            children.Add(shapes.Item(i));
-                        }
-                    }
-                    catch {
+                    Shapes shapes = body.Shapes;
+                    for (int i = 1; i <= shapes.Count; i++) {
+                        children.Add(shapes.Item(i));
                     }
                 }
                 // 其他类型尝试通用方法
                 else {
                     // 尝试获取Children属性
-                    try {
-                        var childrenProp = obj.GetType().GetProperty("Children");
-                        if (childrenProp != null) {
-                            var childrenObj = childrenProp.GetValue(obj);
-                            if (childrenObj != null) {
-                                var countProp = childrenObj.GetType().GetProperty("Count");
-                                if (countProp != null) {
-                                    int count = (int)countProp.GetValue(childrenObj);
-                                    var itemMethod = childrenObj.GetType().GetMethod("Item");
-                                    if (itemMethod != null) {
-                                        for (int i = 1; i <= count; i++) {
-                                            var child = itemMethod.Invoke(childrenObj, new object[] { i });
-                                            if (child != null) {
-                                                children.Add(child);
-                                            }
+                    var childrenProp = obj.GetType().GetProperty("Children");
+                    if (childrenProp != null) {
+                        var childrenObj = childrenProp.GetValue(obj);
+                        if (childrenObj != null) {
+                            var countProp = childrenObj.GetType().GetProperty("Count");
+                            if (countProp != null) {
+                                int count = (int)countProp.GetValue(childrenObj);
+                                var itemMethod = childrenObj.GetType().GetMethod("Item");
+                                if (itemMethod != null) {
+                                    for (int i = 1; i <= count; i++) {
+                                        var child = itemMethod.Invoke(childrenObj, new object[] { i });
+                                        if (child != null) {
+                                            children.Add(child);
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                    catch {
                     }
                 }
 
@@ -168,14 +146,13 @@ namespace COMExportTreeData.Helpers {
                 if (!(obj is Parameter) && !(obj is Part) && rootPart != null) {
                     try {
                         Parameters parameters = rootPart.Parameters;
-                        
+
                         // 尝试将对象转换为 AnyObject
-                        INFITF.AnyObject anyObj = obj as INFITF.AnyObject;
-                        if (anyObj != null) {
+                        if (obj is AnyObject anyObj) {
                             try {
                                 // 使用 SubList(AnyObject, false) 获取当前对象直接拥有的参数
                                 Parameters subParams = parameters.SubList(anyObj, false);
-                                
+
                                 if (subParams != null && subParams.Count > 0) {
                                     for (int i = 1; i <= subParams.Count; i++) {
                                         Parameter param = subParams.Item(i);
@@ -199,7 +176,5 @@ namespace COMExportTreeData.Helpers {
 
             return children;
         }
-
-
     }
 }

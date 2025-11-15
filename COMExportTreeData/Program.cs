@@ -18,17 +18,16 @@ namespace COMExportTreeData {
 
             string docPath = args[0]; // 零件路径
             string jsonPath = args[1]; // Json路径
-            int genNum = 0; // 搜索代数
             string mode = args[3]; // 模式
 
             // 解析搜索代数参数
-            if (!int.TryParse(args[2], out genNum) || genNum < 0) {
+            if (!int.TryParse(args[2], out var genNum) || genNum < 0) {
                 Console.WriteLine("搜索代数参数错误！必须是非负整数");
                 return;
             }
 
             // 连接CATIA（若未运行则启动）
-            Application catia = null;
+            Application catia;
             try {
                 catia = CatiaConnectionHelper.ConnectToCatia();
             }
@@ -61,14 +60,11 @@ namespace COMExportTreeData {
 
                 // 将结果写入JSON文件
                 if (resultList.Count > 0) {
-                    string json;
-                    // 如果只有一个文档，直接输出对象；否则输出数组
-                    if (resultList.Count == 1) {
-                        json = JsonConvert.SerializeObject(resultList[0], Formatting.Indented);
-                    }
-                    else {
-                        json = JsonConvert.SerializeObject(resultList, Formatting.Indented);
-                    }
+                    var json =
+                        // 如果只有一个文档，直接输出对象；否则输出数组
+                        resultList.Count == 1
+                            ? JsonConvert.SerializeObject(resultList[0], Formatting.Indented)
+                            : JsonConvert.SerializeObject(resultList, Formatting.Indented);
 
                     System.IO.File.WriteAllText(jsonPath, json, new UTF8Encoding(false));
                     Console.WriteLine($"成功导出到：{jsonPath}");

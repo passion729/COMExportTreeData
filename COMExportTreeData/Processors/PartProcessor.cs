@@ -19,7 +19,7 @@ namespace COMExportTreeData.Processors {
                     return ProcessPartFull(part, part, maxDepth, 0);
                 }
                 else if (mode == "flatten") {
-                    return ProcessPartFlatten(part, maxDepth, 0);
+                    return ProcessPartFlatten(part, maxDepth);
                 }
                 else {
                     Console.WriteLine($"不支持的模式：{mode}，请使用 'all' 或 'flatten'");
@@ -88,7 +88,7 @@ namespace COMExportTreeData.Processors {
         /// <summary>
         /// 扁平化模式：展平所有嵌套节点到一层，使用路径作为名称
         /// </summary>
-        private static NodeSchema ProcessPartFlatten(object iObj, int maxDepth, int currentDepth) {
+        private static NodeSchema ProcessPartFlatten(object iObj, int maxDepth) {
             if (iObj == null) {
                 return null;
             }

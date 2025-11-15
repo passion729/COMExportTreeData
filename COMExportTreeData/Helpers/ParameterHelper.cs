@@ -45,65 +45,53 @@ namespace COMExportTreeData.Helpers {
             try {
                 // 尝试获取Parameters集合
                 if (obj is Part part) {
-                    try {
-                        Parameters partParams = part.Parameters;
-                        for (int i = 1; i <= partParams.Count; i++) {
-                            parameters.Add(partParams.Item(i));
-                        }
-                    }
-                    catch {
+                    Parameters partParams = part.Parameters;
+                    for (int i = 1; i <= partParams.Count; i++) {
+                        parameters.Add(partParams.Item(i));
                     }
                 }
-                else if (obj is Body body) {
-                    try {
-                        // Body可能也有Parameters
-                        var paramsProperty = obj.GetType().GetProperty("Parameters");
-                        if (paramsProperty != null) {
-                            var paramsObj = paramsProperty.GetValue(obj);
-                            if (paramsObj != null) {
-                                var countProperty = paramsObj.GetType().GetProperty("Count");
-                                if (countProperty != null) {
-                                    int count = (int)countProperty.GetValue(paramsObj);
-                                    var itemMethod = paramsObj.GetType().GetMethod("Item");
-                                    if (itemMethod != null) {
-                                        for (int i = 1; i <= count; i++) {
-                                            var param = itemMethod.Invoke(paramsObj, new object[] { i });
-                                            if (param is Parameter p) {
-                                                parameters.Add(p);
-                                            }
+                else if (obj is Body) {
+                    // Body可能也有Parameters
+                    var paramsProperty = obj.GetType().GetProperty("Parameters");
+                    if (paramsProperty != null) {
+                        var paramsObj = paramsProperty.GetValue(obj);
+                        if (paramsObj != null) {
+                            var countProperty = paramsObj.GetType().GetProperty("Count");
+                            if (countProperty != null) {
+                                int count = (int)countProperty.GetValue(paramsObj);
+                                var itemMethod = paramsObj.GetType().GetMethod("Item");
+                                if (itemMethod != null) {
+                                    for (int i = 1; i <= count; i++) {
+                                        var param = itemMethod.Invoke(paramsObj, new object[] { i });
+                                        if (param is Parameter p) {
+                                            parameters.Add(p);
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                    catch {
                     }
                 }
                 else {
                     // 通用反射方法尝试获取Parameters属性
-                    try {
-                        var paramsProperty = obj.GetType().GetProperty("Parameters");
-                        if (paramsProperty != null) {
-                            var paramsObj = paramsProperty.GetValue(obj);
-                            if (paramsObj != null) {
-                                var countProperty = paramsObj.GetType().GetProperty("Count");
-                                if (countProperty != null) {
-                                    int count = (int)countProperty.GetValue(paramsObj);
-                                    var itemMethod = paramsObj.GetType().GetMethod("Item");
-                                    if (itemMethod != null) {
-                                        for (int i = 1; i <= count; i++) {
-                                            var param = itemMethod.Invoke(paramsObj, new object[] { i });
-                                            if (param is Parameter p) {
-                                                parameters.Add(p);
-                                            }
+                    var paramsProperty = obj.GetType().GetProperty("Parameters");
+                    if (paramsProperty != null) {
+                        var paramsObj = paramsProperty.GetValue(obj);
+                        if (paramsObj != null) {
+                            var countProperty = paramsObj.GetType().GetProperty("Count");
+                            if (countProperty != null) {
+                                int count = (int)countProperty.GetValue(paramsObj);
+                                var itemMethod = paramsObj.GetType().GetMethod("Item");
+                                if (itemMethod != null) {
+                                    for (int i = 1; i <= count; i++) {
+                                        var param = itemMethod.Invoke(paramsObj, new object[] { i });
+                                        if (param is Parameter p) {
+                                            parameters.Add(p);
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                    catch {
                     }
                 }
             }
@@ -127,7 +115,7 @@ namespace COMExportTreeData.Helpers {
                 if (obj is Parameter param) {
                     parameters.Add(param);
                 }
-                
+
                 // 获取 Part 对象
                 Part part = obj as Part;
                 if (part == null) {

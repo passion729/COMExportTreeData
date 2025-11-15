@@ -55,12 +55,7 @@ namespace COMExportTreeData.Processors {
             }
             finally {
                 if (doc != null) {
-                    try {
-                        doc.Close();
-                    }
-                    catch {
-                    }
-
+                    doc.Close();
                     Marshal.ReleaseComObject(doc);
                 }
             }
